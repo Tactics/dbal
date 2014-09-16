@@ -1189,7 +1189,7 @@ class SQLServerPlatform extends AbstractPlatform
                 1
             );
 
-            return sprintf($format, $query, $start, $end);
+            return str_replace('SELECT DISTINCT ', 'SELECT DISTINCT dctrn_result.doctrine_rownum, ', sprintf($format, $query, $start, $end));
         }
 
         //Clear ORDER BY
@@ -1220,8 +1220,7 @@ class SQLServerPlatform extends AbstractPlatform
                 $pattern = sprintf('/%s\.%s\s+(?:AS\s+)?([^,\s)]+)/i', $column['table'], $column['column']);
 
                 if ($isWrapped) {
-                    $overColumn = preg_match($pattern, $query, $matches)
-                        ? $matches[1] : '';
+                    $overColumn = $column['column'];
                 } else {
                     $overColumn = preg_match($pattern, $query, $matches)
                         ? ($column['hasTable'] ? $column['table']  . '.' : '') . $column['column']
@@ -1240,7 +1239,7 @@ class SQLServerPlatform extends AbstractPlatform
         $over  = 'ORDER BY ' . implode(', ', $overColumns);
         $query = preg_replace($selectFromPattern, "$1, ROW_NUMBER() OVER ($over) AS doctrine_rownum FROM ", $query, 1);
 
-        return sprintf($format, $query, $start, $end);
+        return str_replace('SELECT DISTINCT ', 'SELECT DISTINCT dctrn_result.doctrine_rownum, ', sprintf($format, $query, $start, $end));
     }
 
     /**
